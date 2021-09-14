@@ -37,7 +37,7 @@
 // ROS includes
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
-// U-Blox msgs nicludes
+// U-Blox msgs includes
 #include <ublox_msgs/msg/cfg_cfg.hpp>
 #include <ublox_msgs/msg/cfg_dat.hpp>
 #include <ublox_msgs/msg/inf.h>
@@ -48,6 +48,8 @@
 #include <ublox_gps/gps.hpp>
 #include <ublox_gps/rtcm.hpp>
 #include <ublox_gps/raw_data_pa.hpp>
+//RTCM msgs includes
+#include <rtcm_msgs/msg/message.hpp>
 
 // This file also declares UbloxNode which is the main class and ros node. It
 // implements functionality which applies to any u-blox device, regardless of
@@ -184,6 +186,11 @@ class UbloxNode final : public rclcpp::Node {
    * @param event a timer indicating how often to poll the messages
    */
   void pollMessages();
+  /**
+   * @brief Callback for sending rtcm messages to the receiver.
+   * @param msg with rtcm correction data
+  */
+  void rtcmCallback(const rtcm_msgs::msg::Message::SharedPtr msg);
 
   /**
    * @brief Configure INF messages, call after subscribe.
@@ -251,6 +258,9 @@ class UbloxNode final : public rclcpp::Node {
   rclcpp::Publisher<ublox_msgs::msg::AidALM>::SharedPtr aid_alm_pub_;
   rclcpp::Publisher<ublox_msgs::msg::AidEPH>::SharedPtr aid_eph_pub_;
   rclcpp::Publisher<ublox_msgs::msg::AidHUI>::SharedPtr aid_hui_pub_;
+
+  //! Subscribe to RTCM data
+  rclcpp::Subscription<rtcm_msgs::msg::Message>::SharedPtr rtcm_sub_;
 
   //! Navigation rate in measurement cycles, see CfgRate.msg
   uint16_t nav_rate_{0};

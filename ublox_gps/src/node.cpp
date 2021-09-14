@@ -232,6 +232,10 @@ void UbloxNode::addProductInterface(const std::string & product_category,
   }
 }
 
+void UbloxNode::rtcmCallback(const rtcm_msgs::msg::Message::SharedPtr msg) {
+    gps_->sendRtcm(msg->message);
+}
+
 void UbloxNode::getRosParams() {
   device_ = this->declare_parameter("device", std::string("/dev/ttyACM0"));
   frame_id_ = this->declare_parameter("frame_id", std::string("gps"));
@@ -273,10 +277,17 @@ void UbloxNode::getRosParams() {
   // RTCM params
   this->declare_parameter("rtcm.ids");
   this->declare_parameter("rtcm.rates");
+  this->declare_parameter<bool>("rtcm.subscribe", false);
   std::vector<int64_t> rtcm_ids;
   std::vector<int64_t> rtcm_rates;
   this->get_parameter("rtcm.ids", rtcm_ids);
   this->get_parameter("rtcm.rates", rtcm_rates);
+  bool rtcm_subscribe;
+  this->get_parameter("rtcm.subscribe", rtcm_subscribe);
+  if(rtcm_subscribe) {
+      rtcm_sub_ = this->create_subscription<rtcm_msgs::msg::Message>(
+              "rtcm", 10, std::bind(&UbloxNode::rtcmCallback, this, std::placeholders::_1));
+  }
 
   if (rtcm_ids.size() != rtcm_rates.size()) {
     throw std::runtime_error(std::string("Invalid settings: size of rtcm_ids") +
@@ -399,6 +410,7 @@ void UbloxNode::getRosParams() {
 
   // Publish parameters
   this->declare_parameter("publish.all", false);
+  this->declare_parameter("publish.rtcm", false);
 
   this->declare_parameter("publish.nav.all", getRosBoolean(this, "publish.all"));
   this->declare_parameter("publish.nav.att", getRosBoolean(this, "publish.nav.all"));
@@ -515,7 +527,7 @@ void UbloxNode::printInf(const ublox_msgs::msg::Inf &m, uint8_t id) {
 void UbloxNode::subscribe() {
   RCLCPP_DEBUG(this->get_logger(), "Subscribing to U-Blox messages");
   // subscribe messages
-
+  if(getRosBoolean(this, "publish.rtcm"))
   // Nav Messages
   if (getRosBoolean(this, "publish.nav.status")) {
     gps_->subscribe<ublox_msgs::msg::NavSTATUS>([this](const ublox_msgs::msg::NavSTATUS &m) { nav_status_pub_->publish(m); },
