@@ -1,18 +1,25 @@
 # Configuration Settings for C94-M8P device
-ublox_gps_node:
+gps_mb/ublox_gps_node:
   ros__parameters:
     debug: 0                    # Range 0-4 (0 means no debug statements will print)
     device: /dev/ttyACM0
-    frame_id: gps
+    frame_id: gps_mb
     rtcm:
       subscribe: true
     config_on_startup: false    #Assumed to be configured in u-center
-
+    tmode3: 1
+    sv_in:
+      reset: True               # True: disables and re-enables survey-in (resets)
+      # False: Disables survey-in only if TMODE3 is
+      # disabled
+      min_dur: 300              # Survey-In Minimum Duration [s]
+      acc_lim: 3.0              # Survey-In Accuracy Limit [m]
     publish:
-      all: true
+      all: false
       rtcm: false
       aid:
         hui: false
       nav:
+        pvt: true
         posecef: true
-        relposned: false
+        relposned: true

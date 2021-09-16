@@ -54,7 +54,6 @@
 #include <ublox_msgs/msg/nav_clock.hpp>
 #include <ublox_msgs/msg/nav_posecef.hpp>
 #include <ublox_msgs/msg/nav_status.hpp>
-#include <ublox_msgs/msg/nav_relposned9.hpp>
 
 #include <ublox_gps/adr_udr_product.hpp>
 #include <ublox_gps/fix_diagnostic.hpp>
@@ -370,7 +369,7 @@ void UbloxNode::getRosParams() {
   meas_rate_ = 1000 / rate_;
 
   // activate/deactivate any config
-  this->declare_parameter("config_on_startup", true);
+  this->declare_parameter("config_on_startup", false);
   this->declare_parameter("raw_data", false);
   this->declare_parameter("clear_bbr", false);
   this->declare_parameter("save_on_shutdown", false);
@@ -478,9 +477,6 @@ void UbloxNode::getRosParams() {
   if (getRosBoolean(this, "publish.nav.posecef")) {
     nav_posecef_pub_ = this->create_publisher<ublox_msgs::msg::NavPOSECEF>("navposecef", 1);
   }
-  if(getRosBoolean(this, "publish.nav.relposned")) {
-      nav_relposned_pub_ = this->create_publisher<ublox_msgs::msg::NavRELPOSNED9>("relposned", 1);
-  }
   if (getRosBoolean(this, "publish.nav.clock")) {
     nav_clock_pub_ = this->create_publisher<ublox_msgs::msg::NavCLOCK>("navclock", 1);
   }
@@ -536,10 +532,6 @@ void UbloxNode::subscribe() {
   if (getRosBoolean(this, "publish.nav.status")) {
     gps_->subscribe<ublox_msgs::msg::NavSTATUS>([this](const ublox_msgs::msg::NavSTATUS &m) { nav_status_pub_->publish(m); },
                                            1);
-  }
-  if (getRosBoolean(this, "publish.nav.relposned")) {
-    gps_->subscribe<ublox_msgs::msg::NavRELPOSNED9>([this](const ublox_msgs::msg::NavRELPOSNED9 &m) { nav_relposned_pub_->publish(m); },
-                                                1);
   }
   if (getRosBoolean(this, "publish.nav.posecef")) {
     gps_->subscribe<ublox_msgs::msg::NavPOSECEF>([this](const ublox_msgs::msg::NavPOSECEF &m) { nav_posecef_pub_->publish(m); },
