@@ -55,9 +55,8 @@ void HpPosRecProduct::callbackNavRelPosNed(const ublox_msgs::msg::NavRELPOSNED9 
         imu_.linear_acceleration_covariance[0] = -1;
         imu_.angular_velocity_covariance[0] = -1;
 
-        // Transform angle since ublox is representing heading as NED but ROS uses ENU as convention (REP-103).
-        // Alos convert the base-to-rover angle to a robot-to-base angle (consistent with frame_id).
-        double heading = (static_cast<double>(m.rel_pos_heading) * 1e-5 / 180.0 * M_PI) - M_PI_2;
+        // Do not transform heading here! 0 heading means facing north. Transformation handled by navsat_transform instead.
+        double heading = (static_cast<double>(m.rel_pos_heading) * 1e-5 / 180.0 * M_PI);
         tf2::Quaternion orientation;
         orientation.setRPY(0, 0, heading);
         imu_.orientation.x = orientation[0];
