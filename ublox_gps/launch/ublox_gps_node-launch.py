@@ -47,7 +47,14 @@ def generate_launch_description():
     ublox_gps_node = launch_ros.actions.Node(package='ublox_gps',
                                              executable='ublox_gps_node',
                                              output='both',
-                                             parameters=[params])
+                                             parameters=[params],
+                                             remappings=[('rtcm', 'sensors/gnss0/rtcm'),
+                                                         ('fix', 'sensors/gnss0/fix'),
+                                                         ('fix_velocity', 'sensors/gnss0/fix_velocity'),
+                                                         ('navpvt', 'sensors/gnss0/navpvt'),
+                                                         ('navposecef', 'sensors/gnss0/navposecef'),
+                                                         ('navrelposned', 'sensors/gnss0/navrelposned'),
+                                                         ('navheading', 'sensors/gnss0/navheading')])
 
     return launch.LaunchDescription([ublox_gps_node,
 

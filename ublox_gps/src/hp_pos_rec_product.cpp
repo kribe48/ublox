@@ -47,30 +47,27 @@ void HpPosRecProduct::callbackNavRelPosNed(const ublox_msgs::msg::NavRELPOSNED9 
   }
 
   if (getRosBoolean(node_, "publish.nav.heading")) {
-    imu_.header.stamp = node_->now();
-    imu_.header.frame_id = frame_id_;
+    // Only send message when CARR_SOLN_FIXED is true
+    if(m.flags & ublox_msgs::msg::NavRELPOSNED9::FLAGS_CARR_SOLN_FIXED) {
+        imu_.header.stamp = node_->now();
+        imu_.header.frame_id = frame_id_;
 
-    imu_.linear_acceleration_covariance[0] = -1;
-    imu_.angular_velocity_covariance[0] = -1;
+        imu_.linear_acceleration_covariance[0] = -1;
+        imu_.angular_velocity_covariance[0] = -1;
 
-    // Transform angle since ublox is representing heading as NED but ROS uses ENU as convention (REP-103).
-    // Alos convert the base-to-rover angle to a robot-to-base angle (consistent with frame_id).
-    double heading = (static_cast<double>(m.rel_pos_heading) * 1e-5 / 180.0 * M_PI) - M_PI_2;
-    tf2::Quaternion orientation;
-    orientation.setRPY(0, 0, heading);
-    imu_.orientation.x = orientation[0];
-    imu_.orientation.y = orientation[1];
-    imu_.orientation.z = orientation[2];
-    imu_.orientation.w = orientation[3];
-    imu_.orientation_covariance[0] = 1000.0;
-    imu_.orientation_covariance[4] = 1000.0;
-    imu_.orientation_covariance[8] = 1000.0;
-    // When heading is reported to be valid, use accuracy reported in 1e-5 deg units
-    if (m.flags & ublox_msgs::msg::NavRELPOSNED9::FLAGS_REL_POS_HEAD_VALID) {
-      imu_.orientation_covariance[8] = ::pow(static_cast<double>(m.acc_heading) * 1e-5 / 180.0 * M_PI, 2);
+        // Transform angle since ublox is representing heading as NED but ROS uses ENU as convention (REP-103).
+        // Alos convert the base-to-rover angle to a robot-to-base angle (consistent with frame_id).
+        double heading = (static_cast<double>(m.rel_pos_heading) * 1e-5 / 180.0 * M_PI) - M_PI_2;
+        tf2::Quaternion orientation;
+        orientation.setRPY(0, 0, heading);
+        imu_.orientation.x = orientation[0];
+        imu_.orientation.y = orientation[1];
+        imu_.orientation.z = orientation[2];
+        imu_.orientation.w = orientation[3];
+        imu_.orientation_covariance[0] = 1000.0;
+        imu_.orientation_covariance[4] = 1000.0;
+        imu_.orientation_covariance[8] = ::pow(static_cast<double>(m.acc_heading) * 1e-5 / 180.0 * M_PI, 2);
     }
-
-    imu_pub_->publish(imu_);
   }
 
   last_rel_pos_ = m;

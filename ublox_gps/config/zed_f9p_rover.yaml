@@ -2,18 +2,19 @@
 ublox_gps_node:
   ros__parameters:
     debug: 0                    # Range 0-4 (0 means no debug statements will print)
-    device: /dev/ttyACM0
-    frame_id: gps_rover
+    device: /dev/ttyACM1
+    frame_id: gnss1
     rtcm:
       subscribe: false
     config_on_startup: false    #Already configured in u-center
 
     publish:
       all: false
-      rtcm: false
+      rtcm: true
       aid:
         hui: false
       nav:
         posecef: false
         pvt: true
         relposned: true
+        heading: true
