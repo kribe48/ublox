@@ -66,6 +66,9 @@ void HpPosRecProduct::callbackNavRelPosNed(const ublox_msgs::msg::NavRELPOSNED9 
         imu_.orientation_covariance[0] = 1000.0;
         imu_.orientation_covariance[4] = 1000.0;
         imu_.orientation_covariance[8] = ::pow(static_cast<double>(m.acc_heading) * 1e-5 / 180.0 * M_PI, 2);
+        imu_pub_->publish(imu_);
+    } else {
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Receiver not in CARRIER_SOLN_FIXED mode, not publishing heading measurement");
     }
   }
 
